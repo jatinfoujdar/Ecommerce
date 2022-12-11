@@ -46,3 +46,73 @@ export const signup = asyncHandler(async(req,res)=>{
     user
   })
 })
+
+
+
+/*
+$login
+$route http://
+$description(login user)
+$paremeters(email,password) 
+$return user object
+*/
+
+
+export const login = asyncHandler(async(req,res)=>{
+
+    const{ email, password} = req.body
+
+    if(!email ||!password){
+     throw new CustomError("please fill all fields",400)
+    }
+
+   const user = User.findOne({email}).select("+password ")
+    
+   if(!user){
+    throw new CustomError("invalid credentials",400)
+   }
+
+   const isPasswordMatched = await user.comparePassword(password)
+
+   if(!isPasswordMatched){
+          const token = user.getJwtToken()
+          user.password = undefined;
+          res.cookie("token",token,cookieOption)
+         return res.status(200).json({
+            success: true,
+            token,
+            user
+         })
+   }
+   throw new CustomError("invalid credentials-pass",400)
+})
+
+ /*
+$logout
+$route http://5000
+$description :user logout
+$paremeters 
+$return success message
+*/
+
+export const logout = asyncHandler(async(_req,res)=>{
+    res.cookie("token",null,{
+
+        expires: new Date(Date.now()),
+        httpOnly:true
+    })
+      req.status(200).json({
+        success:true,
+        message: "logged out"
+      })
+    })
+
+
+     /*
+$forget password
+$route http://5000
+$description :user logout
+$paremeters 
+$return success message
+*/
+
