@@ -2,6 +2,7 @@ import User from "../models/userSchema"
 import asyncHandler from "../services/asyncHandler"
 import CustomError from "../utils/customError"
 import mailHelper from "../utils/mailHelper"
+import crypto from "crypto"
 
 export const cookieOption = {
     expires: new Date(Date.now()+3 *24 *60*60*1000),
@@ -67,7 +68,7 @@ export const login = asyncHandler(async(req,res)=>{
      throw new CustomError("please fill all fields",400)
     }
 
-   const user = User.findOne({email}).select("+password ")
+   const user = await User.findOne({email}).select("+password ")
     
    if(!user){
     throw new CustomError("invalid credentials",400)
@@ -153,4 +154,56 @@ export const forgotPassword = asyncHandler(async(req,res) =>{
 
      }
 
+})
+
+
+     /*
+$reset password
+$route http://5000
+$description :user will reset password based on url token
+$paremeters  token from url , pass ,confirm pass
+$return success message - = user object
+*/
+
+
+export const resetPassword = asyncHandler(async(res,req)=>{
+  const {token:resetToken} = req.params
+  const {password,confirmPassword} = req.body
+
+   const resetPasswordToken = crypto
+   .createHash("sha256")
+   .update(resetToken)
+   .digest("hex")
+
+
+    const user = await User.findOne({
+    forgotPasswordToken: resetPasswordToken,
+    forgotPasswordExpiry: {$gt: Date.now()}
+
+   })
+   if (!user) {
+    throw new CustomError("password token is invalid or expired",400)
+   }
+
+   if (password != confirmPassword) {
+    throw new CustomError("password and conf password does not match",400)
+   }
+ 
+   user.password = password
+   user.forgotPasswordToken = undefined
+   user.forgotPasswordExpiry = undefined
+
+   await user.save()
+
+   //create a token and response
+
+   const token = user.getJwtToken()
+
+   user.password = undefined
+
+   res.cookie("token",token,cookieOption)
+   res.status(200).json({
+    success:true,
+    user
+   })
 })
