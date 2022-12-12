@@ -207,3 +207,26 @@ export const resetPassword = asyncHandler(async(res,req)=>{
     user
    })
 })
+
+
+    /*
+$get user profile
+$request type : get post
+$route http://5000
+$description :user will reset password based on url token
+$paremeters  token from url , pass ,confirm pass
+$return success message - = user object
+*/
+
+
+export const getProfile = asyncHandler(async(req,res)=>{
+ const {user} = req
+ if(!user){
+  throw new CustomError("user not found",404)
+ }
+
+ res.status(200).json({
+  success:true,
+  user
+ })
+})

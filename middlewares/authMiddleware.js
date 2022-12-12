@@ -5,7 +5,7 @@ import CustomError from "../utils/customError"
 import config from "../config"
 
 
-export const isLoggedIn = asyncHandler(async(req , res, next)=>{
+export const isLoggedIn = asyncHandler(async(req , _res, next)=>{
     let token;
 
 
