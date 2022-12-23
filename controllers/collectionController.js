@@ -18,7 +18,7 @@ export const createCollection = asyncHandler(async(req,res)=>{
     }
     //add this to database
 
-   const collection = Collection.create({
+   const collection = await Collection.create({
         name
         })
 
@@ -32,9 +32,36 @@ export const createCollection = asyncHandler(async(req,res)=>{
 
 
 export const updateCollection = asyncHandler(async(req,res)=>{
+//existing value to be updates
+    const {id:collectionId} = req.params
 
-    
+//new value to get updated
+    const {name} = req.body
+
+    if(!name){
+        throw new CustomError("Collection name is required",400)
+    }
+
+    let updatedCollection = await Collection.findByIdAndUpdate(
+        collectionId,
+        {
+            name
+        },
+        {
+            new: true,
+            runValidators: true,
+        }
+    )
+
+    if(!updateCollection){
+        throw new CustomError("Collection not found",400)
+    }
 
 
-
+    //send response
+    req.satus(200).json({
+        success: true,
+        message: "collection updated successfully",
+        updateCollection
+    })
 })
