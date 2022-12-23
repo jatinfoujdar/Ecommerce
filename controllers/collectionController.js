@@ -65,3 +65,22 @@ export const updateCollection = asyncHandler(async(req,res)=>{
         updateCollection
     })
 })
+
+
+export const deleteCollection = asyncHandler(async(req,res)=>{
+    
+    const {id:collectionId} = req.params
+
+    const collectionToDelete = await Collection.findByIdAndDelete(collectionId)
+
+    if(!collectionToDelete){
+        throw new CustomError("Collection not found",400)
+    }
+
+    req.satus(200).json({
+        success: true,
+        message: "collection Deleted successfully",
+        collectionToDelete
+    })
+
+})
