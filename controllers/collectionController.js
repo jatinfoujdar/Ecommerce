@@ -84,3 +84,18 @@ export const deleteCollection = asyncHandler(async(req,res)=>{
     })
 
 })
+
+
+export const getAllCollection = asyncHandler(async(req,res)=>{
+   const collections =  await Collection.find()
+
+   if(!collections){
+    throw new CustomError("No Collecton found ",400)
+   }
+
+   res.satus(200).json({
+        success: true,
+        message: "collections All list successfully",
+        collections
+   })
+})
